@@ -16,6 +16,23 @@ OneButton::OneButton(int pin, int activeLow)
 {
   _pin = pin;
 
+  if (activeLow) {
+    // use the given pin as input and activate internal PULLUP resistor.
+    pinMode( pin, INPUT_PULLUP );
+  } else {
+    // use the given pin as input
+    pinMode(pin, INPUT);
+  } // if
+  init(activeLow);
+} // OneButton
+
+OneButton::OneButton(int activeLow)
+{
+  init(activeLow);
+} // OneButton
+
+void OneButton::init(int activeLow)
+{
   _debounceTicks = 50;      // number of millisec that have to pass by before a click is assumed as safe.
   _clickTicks = 600;        // number of millisec that have to pass by before a click is detected.
   _pressTicks = 1000;       // number of millisec that have to pass by before a long button press is detected.
@@ -27,17 +44,10 @@ OneButton::OneButton(int pin, int activeLow)
     // the button connects the input pin to GND when pressed.
     _buttonReleased = HIGH; // notPressed
     _buttonPressed = LOW;
-
-    // use the given pin as input and activate internal PULLUP resistor.
-    pinMode( pin, INPUT_PULLUP );
-
   } else {
     // the button connects the input pin to VCC when pressed.
     _buttonReleased = LOW;
     _buttonPressed = HIGH;
-
-    // use the given pin as input
-    pinMode(pin, INPUT);
   } // if
 
   // no functions attached yet: clear all function pointers.
@@ -47,8 +57,7 @@ OneButton::OneButton(int pin, int activeLow)
   _longPressStartFunc = NULL;
   _longPressStopFunc = NULL;
   _duringLongPressFunc = NULL;
-} // OneButton
-
+} // OneButton.init()
 
 // explicitly set the number of millisec that have to pass by before a click is assumed as safe.
 void OneButton::setDebounceTicks(int ticks) { 
@@ -111,10 +120,8 @@ bool OneButton::isLongPressed(){
   return _isLongPressed;
 }
 
-void OneButton::tick(void)
+void OneButton::tick(int buttonLevel)
 {
-  // Detect the input information 
-  int buttonLevel = digitalRead(_pin); // current button signal.
   unsigned long now = millis(); // current (relative) time in msecs.
 
   // Implementation of the state machine
@@ -178,6 +185,12 @@ void OneButton::tick(void)
     } // if  
 
   } // if  
+} // OneButton.tick()
+
+void OneButton::tick(void)
+{
+  // Detect the input information 
+  OneButton::tick( digitalRead(_pin) ); // current button signal.
 } // OneButton.tick()
 
 
